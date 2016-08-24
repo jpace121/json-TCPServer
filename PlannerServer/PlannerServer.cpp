@@ -10,10 +10,12 @@
 #include <thread>
 #include <utility>
 #include <boost/asio.hpp>
+#include "json.hpp"
 
 #define PORTN (1234)
 
 using boost::asio::ip::tcp;
+using json = nlohmann::json;
 
 const int max_length = 1024; // Need better strategy for this.
 
@@ -32,9 +34,15 @@ void session(tcp::socket sock)
 			else if (error)
 				throw boost::system::system_error(error); // Some other error.
 
-			std::string data_string = std::string(data);
+			std::string data_string = std::string(data); //for printing
+			//std::stringstream data_istring(data, length);
+			//std::cout << data_istring << std::endl;
+			json j = json::parse(data_string.substr(0,length)); //failinf here, assuming need to only give some of data?
+			
+
 			std::cout << "Length: " << length << std::endl;
-			std::cout << "Data: " << data_string.substr(0,length) << std::endl;
+			std::cout << "Data: " << data_string.substr(0,length) << std::endl; //substr removes the trash in the buffer
+			std::cout << "JSON: " << j.dump() << std::endl;
 			boost::asio::write(sock, boost::asio::buffer(data, length)); //write back (async)
 			//sock.write_some(boost::asio::buffer(data,6)); //non async
 		}
