@@ -37,14 +37,28 @@ void session(tcp::socket sock)
 			std::string data_string = std::string(data); //for printing
 			//std::stringstream data_istring(data, length);
 			//std::cout << data_istring << std::endl;
-			json j = json::parse(data_string.substr(0,length)); //failinf here, assuming need to only give some of data?
-			
 
+			json from_client;
+			try {
+				from_client = json::parse(data_string.substr(0, length));
+			}
+			catch (...) { //Catch all non ideal...
+				std::cout << "Parse Error!" << std::endl;
+				boost::asio::write(sock, boost::asio::buffer("{\"err\":true}"));
+				continue;
+		    }
 			std::cout << "Length: " << length << std::endl;
-			std::cout << "Data: " << data_string.substr(0,length) << std::endl; //substr removes the trash in the buffer
-			std::cout << "JSON: " << j.dump() << std::endl;
-			boost::asio::write(sock, boost::asio::buffer(data, length)); //write back (async)
-			//sock.write_some(boost::asio::buffer(data,6)); //non async
+			std::cout << "Raw Data: " << data_string.substr(0,length) << std::endl; //substr removes the trash in the buffer
+			//would rather do a try-catch here as well for missing keys. null will through error wen used.
+			if (!from_client["j"].is_null()) {
+				std::cout << "JSON: " << from_client["j"] << std::endl;
+			}
+			else {
+				std::cout << "JSON: " << "Key Missing!" << std::endl;
+			}
+			boost::asio::write(sock, boost::asio::buffer("{\"err\":false}"));
+			//boost::asio::write(sock, boost::asio::buffer(data, length)); //write back (async)
+			
 		}
 	}
 	catch (std::exception& e)
