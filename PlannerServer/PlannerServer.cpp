@@ -32,10 +32,11 @@ void session(tcp::socket sock)
 			else if (error)
 				throw boost::system::system_error(error); // Some other error.
 
+			std::string data_string = std::string(data);
 			std::cout << "Length: " << length << std::endl;
-			std::cout << "Data: " << data << std::endl;
-			//boost::asio::write(sock, boost::asio::buffer(data, length)); //write back
-			sock.write_some(boost::asio::buffer(data,6));
+			std::cout << "Data: " << data_string.substr(0,length) << std::endl;
+			boost::asio::write(sock, boost::asio::buffer(data, length)); //write back (async)
+			//sock.write_some(boost::asio::buffer(data,6)); //non async
 		}
 	}
 	catch (std::exception& e)
